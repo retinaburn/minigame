@@ -1,13 +1,7 @@
 import pygame
 from pygame.locals import *
 import os
-import locale
 
-locale.setlocale(locale.LC_ALL, '')
-code = locale.getpreferredencoding()
-
-MENU_BUTTON = 11
-D_PAD = 9
 
 os.putenv('SDL_VIDEODRIVER','fbcon')
 pygame.init()
@@ -19,7 +13,8 @@ joy = pygame.joystick.Joystick(0)
 joy.init()
 print "Name: {}".format(joy.get_name())
 
-
+MENU_BUTTON = 11
+DPAD = JOYHATMOTION
 
 import curses
 
@@ -29,6 +24,13 @@ HAS_IC = 0
 HAS_IL = 0
 LONG_NAME = 0
 TERM_NAME = 0
+
+#Add x,y co-ordinates together
+def add(first, second):
+    x = first[0] + second[0]
+    y = first[1] + second[1]
+    return (x,y)
+
 
 def main(screen):
     global DO_COLOR,HAS_COLOR,HAS_IC,HAS_IL,LONG_NAME,TERM_NAME
@@ -56,7 +58,7 @@ def main(screen):
             if event.type == JOYBUTTONUP and event.button == MENU_BUTTON:
                 curses.endwin()
                 running = False
-            if event.type == JOYHATMOTION:
+            if event.type == DPAD:
                 screen.addstr(1,0, "Event Value: {}".format(event.value))
                 if event.value[1] == 1:
                     screen.addch(player[0],player[1],' ')
