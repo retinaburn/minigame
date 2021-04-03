@@ -15,40 +15,35 @@ print "Name: {}".format(joy.get_name())
 
 MENU_BUTTON = 11
 DPAD = JOYHATMOTION
-
+HEIGHT = 0
+WIDTH = 0
 import curses
 
-DO_COLOR = 0
-HAS_COLOR = 0
-HAS_IC = 0
-HAS_IL = 0
-LONG_NAME = 0
-TERM_NAME = 0
-LOG_LINES = ['','','','']
 #Add x,y co-ordinates together
 def add(first, second):
     x = first[0] + second[0]
     y = first[1] + second[1]
     return (x,y)
 
+def fence(player):
+    global HEIGHT, WIDTH
+    y,x = player
+    if y < 0:
+        y = 0
+    elif y > (HEIGHT - 2):
+        y = HEIGHT - 2
+    if x < 0:
+        x = 0
+    elif x > (WIDTH - 2):
+        x = WIDTH - 2
+    return (y,x)
 
 def main(screen):
-    global LOG_LINES
-    global DO_COLOR,HAS_COLOR,HAS_IC,HAS_IL,LONG_NAME,TERM_NAME
-
+    global HEIGHT, WIDTH
     screen = curses.initscr()
     curses.curs_set(0)
-    h, w = screen.getmaxyx()
-    player = (h/2,w/2)
-
-    DO_COLOR = curses.can_change_color()
-    HAS_COLOR = curses.has_colors()
-    HAS_IC = curses.has_ic()
-    HAS_IL = curses.has_il()
-    LONG_NAME = curses.longname()
-    TERM_NAME = curses.termname()
-    print "Do Color: {}\nHas Color: {}\nHas insert/delete character capabilities: {}\nHas insert/delete line capabilities: {}\nLong Name: {}\nTerminal Name: {}".format(DO_COLOR, HAS_COLOR, HAS_IC, HAS_IL, LONG_NAME, TERM_NAME)
-    print "LOG_LINES: {}".format(LOG_LINES)
+    HEIGHT, WIDTH = screen.getmaxyx()
+    player = (HEIGHT/2,WIDTH/2)
 
     #print "Screen: Height: {}, Width: {}".format(h, w)
     #win = curses.newwin(h, w, 0, 0)
@@ -72,14 +67,15 @@ def main(screen):
                 else:
                     dpad_down = True
 
+                next_position = (0,0)
                 if event.value[1] == 1: #Up
-                    next_position = (-1,0)
+                    next_position = add(next_position,(-1,0))
                 elif event.value[1] == -1: #Down
-                    next_position = (1,0)
+                    next_position = add(next_position,(1,0))
                 if event.value[0] == 1: #Right
-                    next_position = (0,1)
+                    next_position = add(next_position,(0,1))
                 if event.value[0] == -1: #Left
-                    next_position = (0,-1)
+                    next_position = add(next_position,(0,-1))
             
 
             screen.addstr(0,0, "Event: {}".format(event))
@@ -87,13 +83,12 @@ def main(screen):
             #print "Event: {}".format(event)
             
         if dpad_down:
-            #clear last position
             screen.addstr(2,0, "Position: {}".format(player))
+            screen.addstr(3,0, "Fenced Position: {}".format(fence(player)))
+            #clear last position
             screen.addch(player[0],player[1],' ')
-            player = add(player, next_position)
-            screen.addstr(3,0, "Position: {}".format(player))
-            #time.sleep(3)
-            #screen.addstr(2,0, "Player: {}".format(player))
+            player = fence(add(player, next_position))
+            #screen.addstr(3,0, "Position: {}".format(player))
             screen.addch(player[0],player[1],curses.ACS_DIAMOND)
             screen.refresh()
     #End While
