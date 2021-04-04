@@ -19,6 +19,25 @@ HEIGHT = 0
 WIDTH = 0
 import curses
 
+
+#COLORS 197-202
+
+def init_color(curses):
+    curses.start_color()
+    curses.use_default_colors()
+    for i in range(0, curses.COLORS):
+        curses.init_pair(i+1,i,-1)
+
+MIN_COLOR = 197
+MAX_COLOR = 203
+
+def next_color(color):
+    global MIN_COLOR, MAX_COLOR 
+    result = (color + 1) % MAX_COLOR
+    if result == 0:
+        result = MIN_COLOR
+    return result
+
 #Add x,y co-ordinates together
 def add(first, second):
     x = first[0] + second[0]
@@ -39,8 +58,10 @@ def fence(player):
     return (y,x)
 
 def main(screen):
-    global HEIGHT, WIDTH
+    global HEIGHT, WIDTH,MIN_COLOR
+    init_color(curses)
     screen = curses.initscr()
+
     curses.curs_set(0)
     HEIGHT, WIDTH = screen.getmaxyx()
     player = (HEIGHT/2,WIDTH/2)
@@ -55,13 +76,14 @@ def main(screen):
 
     dpad_down = False
     next_position = (0,0)
+    color = MIN_COLOR
     while(running):
         for event in pygame.event.get():
             if event.type == JOYBUTTONUP and event.button == MENU_BUTTON:
                 curses.endwin()
                 running = False
             if event.type == DPAD:
-                screen.addstr(1,0, "Event Value: {}".format(event.value))
+                screen.addstr(1,0, "Event Value: {}".format(event.value),curses.color_pair(0))
                 if event.value == (0,0):
                     dpad_down = False
                 else:
@@ -86,10 +108,11 @@ def main(screen):
             screen.addstr(2,0, "Position: {}".format(player))
             screen.addstr(3,0, "Fenced Position: {}".format(fence(player)))
             #clear last position
-            screen.addch(player[0],player[1],' ')
+            #screen.addch(player[0],player[1],' ')
             player = fence(add(player, next_position))
             #screen.addstr(3,0, "Position: {}".format(player))
-            screen.addch(player[0],player[1],curses.ACS_DIAMOND)
+            color = next_color(color)
+            screen.addch(player[0],player[1],curses.ACS_DIAMOND,curses.color_pair(color))
             screen.refresh()
     #End While
     
